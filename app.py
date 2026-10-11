@@ -1,86 +1,106 @@
 import streamlit as st
-import math
-import time
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Heart Animation", page_icon="💗")
-
-st.title("💗 Heart Animation")
-st.write("A glowing animated heart that runs in your browser.")
+st.set_page_config(
+    page_title="I Love You ❤️",
+    page_icon="❤️",
+    layout="centered"
+)
 
 components.html("""
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body {
-    margin: 0;
-    background: black;
-    overflow: hidden;
-}
-canvas {
-    display: block;
-    width: 100%;
-    height: 420px;
-}
+    body {
+        margin: 0;
+        background: black;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+    }
+
+    canvas {
+        display: block;
+        width: 100%;
+        height: 600px;
+    }
 </style>
 </head>
 <body>
+
 <canvas id="heart"></canvas>
+
 <script>
 const canvas = document.getElementById("heart");
 const ctx = canvas.getContext("2d");
 
+let width, height;
+
 function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = 420;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    width = rect.width;
+    height = rect.height;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
+
 resize();
 window.addEventListener("resize", resize);
 
-let start = performance.now();
+let startTime = performance.now();
 
 function draw(now) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, width, height);
 
-    const scale = 13 + 2 * Math.sin((now-start)/250);
-    const points = [];
+    // Six stages, corresponding to scales 11 through 16
+    const stage = Math.floor((now - startTime) / 300) % 6;
+    const scale = 11 + stage;
 
-    for (let i = 0; i < 600; i++) {
-        const t = i * Math.PI * 2 / 600;
-        const x = 16 * Math.pow(Math.sin(t), 3);
-        const y = 13 * Math.cos(t)
-                - 5 * Math.cos(2*t)
-                - 2 * Math.cos(3*t)
-                - Math.cos(4*t);
+    // Fit the heart to both mobile and computer screens
+    const size = Math.min(width / 36, height / 34);
+    const s = scale * size / 14;
 
-        points.push({
-            x: canvas.width/2 + x*scale,
-            y: canvas.height/2 - y*scale
-        });
+    const cx = width / 2;
+    const cy = height / 2;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "bold 8px Arial";
+    ctx.fillStyle = "#ffb6c1";
+    ctx.shadowColor = "#ff69b4";
+    ctx.shadowBlur = 5;
+
+    // Draw repeated text along the heart outline
+    for (let i = 0; i < 120; i++) {
+        const angle = i * Math.PI * 2 / 120;
+
+        const x = 16 * Math.pow(Math.sin(angle), 3);
+        const y = 13 * Math.cos(angle)
+                - 5 * Math.cos(2 * angle)
+                - 2 * Math.cos(3 * angle)
+                - Math.cos(4 * angle);
+
+        ctx.fillText(
+            "I love you",
+            cx + x * s,
+            cy - y * s
+        );
     }
 
-    ctx.beginPath();
-    points.forEach((p, i) => {
-        if (i === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-    });
-    ctx.closePath();
-
-    ctx.shadowColor = "#ff1744";
-    ctx.shadowBlur = 25;
-    ctx.fillStyle = "#ff4d88";
-    ctx.fill();
-
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = "#ffc1d6";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
     requestAnimationFrame(draw);
 }
+
 requestAnimationFrame(draw);
 </script>
+
 </body>
 </html>
-""", height=440)
+""", height=620, scrolling=False)
