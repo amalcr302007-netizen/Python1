@@ -8,22 +8,24 @@ components.html("""
 <html>
 <head>
 <style>
-body {
+html, body {
     margin: 0;
+    padding: 0;
     background: black;
     overflow: hidden;
 }
 canvas {
+    display: block;
     width: 100%;
     height: 600px;
-    display: block;
 }
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="heart"></canvas>
+
 <script>
-const canvas = document.getElementById("c");
+const canvas = document.getElementById("heart");
 const ctx = canvas.getContext("2d");
 
 let W, H;
@@ -36,44 +38,46 @@ function resize() {
     canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
+
 resize();
 window.addEventListener("resize", resize);
 
-let start = performance.now();
+const total = 120;
+const duration = 3500;
+const pause = 500;
+const cycle = duration + pause;
 
 function animate(now) {
+    const elapsed = now % cycle;
+    const progress = Math.min(1, elapsed / duration);
+    const count = Math.floor(progress * total);
+
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, W, H);
 
-    const elapsed = (now - start) / 1000;
     const scale = Math.min(W / 38, H / 35);
-    const count = Math.min(120, Math.floor(elapsed * 35));
 
     ctx.font = "bold 9px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#ffb6c1";
     ctx.shadowColor = "#ff69b4";
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 5;
 
     for (let i = 0; i < count; i++) {
-        const a = i * 2 * Math.PI / 120;
+        const angle = i * Math.PI * 2 / total;
 
-        const x = 16 * Math.pow(Math.sin(a), 3);
-        const y = 13 * Math.cos(a)
-                - 5 * Math.cos(2*a)
-                - 2 * Math.cos(3*a)
-                - Math.cos(4*a);
+        const x = 16 * Math.pow(Math.sin(angle), 3);
+        const y = 13 * Math.cos(angle)
+                - 5 * Math.cos(2 * angle)
+                - 2 * Math.cos(3 * angle)
+                - Math.cos(4 * angle);
 
         ctx.fillText(
             "I love you",
             W / 2 + x * scale,
             H / 2 - y * scale
         );
-    }
-
-    if (count >= 120) {
-        start = now;
     }
 
     requestAnimationFrame(animate);
